@@ -45,4 +45,9 @@ function EasyLib:has_block_below(x, y, z)
     return block.get(x, y - 1, z) ~= 0
 end
 
+function EasyLib:get_block_name(x, y, z)
+    local blockid = block.get(x, y, z)
+    return block.name(blockid)
+end
+
 return EasyLib
