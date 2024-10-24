@@ -14,6 +14,7 @@ function UsableItem:get_conditions_for_use(x, y, z, playerid)
 end
 
 function UsableItem:use(x, y, z, playerid)
+    return true
 end
 
 function UsableItem:try_use(x, y, z, playerid)
@@ -22,11 +23,10 @@ function UsableItem:try_use(x, y, z, playerid)
         return false
     end
 
-    if self.decrease_count then
+    if self:use(x, y, z, playerid) and self.decrease_count then
         self:decrease_item_count(playerid)
     end
 
-    self:use(x, y, z, playerid)
     return true
 end
 
