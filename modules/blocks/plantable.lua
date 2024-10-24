@@ -1,8 +1,8 @@
 local EasyLib = require "easylib:main"
-
+local Properties = require "easylib:blocks/properties"
 local Plantable = {}
 
-Plantable.states = {}
+EasyLib:mixin(Plantable, Properties)
 
 function Plantable:get_max_age()
     return 7
@@ -16,10 +16,6 @@ function Plantable:get_base_block_name()
     return nil
 end
 
-function Plantable:update_states(x, y, z)
-    self.states = block.get_states(x, y, z)
-end
-
 function Plantable:grow_plant(x, y, z)
     local blockid = block.get(x, y, z)
     local blockName = block.name(blockid)
@@ -29,11 +25,10 @@ function Plantable:grow_plant(x, y, z)
     if not base_block_name then
         return
     end
+    self:unpack_states(x, y, z)
 
-    local states = block.get_states(x, y, z)
-    local dec = block.decompose_state(states)
+    local age = self.property + 1
 
-    local age = dec[3] + 1
     if age > self:get_max_age() then
         age = self:get_max_age()
         return false
@@ -45,12 +40,14 @@ function Plantable:grow_plant(x, y, z)
         return false
     end
 
-    dec[3] = age
-    block.set_user_bits(x, y, z, 0, 1, age)
-    local newState = block.compose_state(dec)
-    -- print(x, y, z, blockName.." modified to "..base_block_name..age, dec[3], states, newState)
+    self.property = age
 
-    block.place(x, y, z, block_index, newState)
+    block.set_user_bits(x, y, z, 0, 1, self.property)
+    self:pack_states()
+
+    -- print(x, y, z, blockName.." modified to "..base_block_name..age, self.property, self.states)
+
+    block.place(x, y, z, block_index, self.states)
     return true
 end
 
@@ -61,8 +58,7 @@ function Plantable:on_broken(x, y, z, playerid)
 end
 
 function Plantable:get_age()
-    local dec = block.decompose_state(self.states)
-    return dec[3]
+    return self.property
 end
 
 return Plantable
